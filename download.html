@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Download your task ZIP</title>
+<style>
+body{font:17px system-ui,sans-serif;max-width:700px;margin:60px auto;padding:0 22px;line-height:1.6;color:#182434}
+input{display:block;box-sizing:border-box;width:100%;margin:12px 0 24px;padding:12px;font:inherit}
+button,a#download{font:inherit;padding:12px 20px;background:#123d71;color:white;border:0;border-radius:6px;cursor:pointer}
+#status{white-space:pre-wrap;overflow-wrap:anywhere} small{color:#475569}
+</style>
+<h1>Download your task ZIP</h1>
+<p>This page unlocks the encrypted transfer package and saves the original submission ZIP.
+Everything happens locally in your browser. Your files and key are never uploaded.</p>
+<label for="parts">1. Select all four <code>.bin</code> files from this extracted folder.</label>
+<input id="parts" type="file" multiple accept=".bin">
+<label for="key">2. Paste the private key provided in your Codex chat.</label>
+<input id="key" type="password" autocomplete="off" spellcheck="false">
+<button id="unlock">3. Unlock and download ZIP</button>
+<p id="status" role="status"></p>
+<a id="download" hidden>Download submission ZIP</a>
+<p><small>The original ZIP is 131.5 MB. Keep this page open while it verifies and decrypts the files.
+If your browser asks where to save it, choose Downloads.</small></p>
+<script>
+const MANIFEST = {"filename": "dependency-metadata-engine-v2.zip", "bytes": 131507021, "sha256": "c1749472b58fedd26d3464636b6bc2ce0713d87ae4f8719f7adbf575335a16cd", "nonce": "wQ+i/mApt+R3eDXs", "parts": [{"name": "task-transfer-01.bin", "bytes": 33554432, "sha256": "5b6d70a5115f3f5059cda509f9863f220275fd33aba0bab29aa96a4b5b3cd9be"}, {"name": "task-transfer-02.bin", "bytes": 33554432, "sha256": "f30d13a83b353dec64bc5f3d449bda1b1f2521eac7708680f0b10e5e079a2ff5"}, {"name": "task-transfer-03.bin", "bytes": 33554432, "sha256": "645e8809cc8b0f863bd110a52ab1421ed68d16760b5017089bc14d233e3455a6"}, {"name": "task-transfer-04.bin", "bytes": 30843741, "sha256": "66a3f88a5704ff53c8b6157183e1f481c77cd3ebba2cb51095685f4d0e7f7bc4"}]};
+async function hexDigest(bytes) {
+  return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), b => b.toString(16).padStart(2,'0')).join('');
+}
+async function decryptTransfer(files, encodedKey, progress = () => {}) {
+  if (!globalThis.crypto?.subtle) throw new Error('This browser does not provide Web Crypto. Open this local page in a current Chrome, Edge, Firefox or Safari.');
+  if (files.length !== MANIFEST.parts.length) throw new Error('Select exactly the four .bin files from the extracted package.');
+  const byName = new Map(files.map(file => [file.name, file]));
+  const buffers = [];
+  let length = 0;
+  for (const part of MANIFEST.parts) {
+    const file = byName.get(part.name);
+    if (!file) throw new Error('Missing file: ' + part.name);
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (bytes.byteLength !== part.bytes || await hexDigest(bytes) !== part.sha256) throw new Error('File is incomplete or damaged: ' + part.name);
+    buffers.push(bytes); length += bytes.byteLength;
+    progress('Verified ' + buffers.length + ' of ' + MANIFEST.parts.length + ' files.');
+  }
+  encodedKey = encodedKey.trim();
+  if (!/^[A-Za-z0-9_-]{43}$/.test(encodedKey)) throw new Error('Paste the complete 43-character private key from your chat.');
+  const rawKey = Uint8Array.from(atob(encodedKey.replace(/-/g,'+').replace(/_/g,'/') + '='), c => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey('raw', rawKey, {name:'AES-GCM'}, false, ['decrypt']);
+  const iv = Uint8Array.from(atob(MANIFEST.nonce), c => c.charCodeAt(0));
+  const ciphertext = new Uint8Array(length);
+  let position = 0;
+  for (const buffer of buffers) { ciphertext.set(buffer,position); position += buffer.length; }
+  progress('Decrypting and checking the original ZIP...');
+  let result;
+  try { result = await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ciphertext); }
+  catch { throw new Error('The private key is incorrect, or the encrypted package has changed.'); }
+  if (result.byteLength !== MANIFEST.bytes || await hexDigest(result) !== MANIFEST.sha256) throw new Error('The decrypted ZIP failed its integrity check.');
+  return result;
+}
+</script>
+<script>
+const status = document.getElementById('status');
+document.getElementById('unlock').onclick = async () => {
+  const button = document.getElementById('unlock');
+  button.disabled = true;
+  try {
+    status.textContent = 'Verifying files...';
+    const result = await decryptTransfer(Array.from(document.getElementById('parts').files), document.getElementById('key').value, message => status.textContent = message);
+    const link = document.getElementById('download');
+    link.href = URL.createObjectURL(new Blob([result],{type:'application/zip'}));
+    link.download = MANIFEST.filename;
+    link.hidden = false;
+    status.textContent = 'ZIP verified. Download started. If needed, click Download submission ZIP below.';
+    link.click();
+  } catch(error) { status.textContent = error.message; }
+  finally { button.disabled = false; }
+};
+</script></html>
