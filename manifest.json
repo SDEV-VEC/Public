@@ -1,0 +1,28 @@
+{
+  "filename": "dependency-metadata-engine.zip",
+  "bytes": 131439667,
+  "sha256": "5993a3215ae5052521b4c4f271069995845401c803320e12c749d3fb2134edf2",
+  "nonce": "/ZhxnL0mmdN6FO3H",
+  "parts": [
+    {
+      "name": "task-transfer-01.bin",
+      "bytes": 33554432,
+      "sha256": "04fae564309f4be9dc6094dc906bc538dd6a91334a5ca957034e246d4e14d421"
+    },
+    {
+      "name": "task-transfer-02.bin",
+      "bytes": 33554432,
+      "sha256": "d6774ffb4ad8a7bf6475eda7a015600ff2e38e2a53f014d59dccfc14936989f8"
+    },
+    {
+      "name": "task-transfer-03.bin",
+      "bytes": 33554432,
+      "sha256": "b945f4b0d15e1defb332cd1e7aed95dc34ae335657d47e2c2e8bc7b0a3fc567d"
+    },
+    {
+      "name": "task-transfer-04.bin",
+      "bytes": 30776387,
+      "sha256": "02cce09f2dc07d898226572026893850afbc5025abd8715b7e586fdb1b076727"
+    }
+  ]
+}
