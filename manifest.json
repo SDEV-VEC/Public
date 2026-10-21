@@ -1,0 +1,28 @@
+{
+  "filename": "pep508-distribution-policy.zip",
+  "bytes": 131533188,
+  "sha256": "5c3fdca111267df1ddbc723ba7f245212373139fa8ee2c09fba9cd0dd28c06a3",
+  "nonce": "2kTuoqc6RdJBfUPw",
+  "parts": [
+    {
+      "name": "task-transfer-01.bin",
+      "bytes": 33554432,
+      "sha256": "c330add6139e9b8be7297f09afae1f334ebd69e6b413b89970d7ba1b8472120b"
+    },
+    {
+      "name": "task-transfer-02.bin",
+      "bytes": 33554432,
+      "sha256": "ce39dffd2f230f5f2f9551232c4dc138c8d205a1e0beed08c76cd07a8eba1f7b"
+    },
+    {
+      "name": "task-transfer-03.bin",
+      "bytes": 33554432,
+      "sha256": "d3feade34ca0020561f8d596dfa4664737e63f6a975e5ffd03c7896259444acc"
+    },
+    {
+      "name": "task-transfer-04.bin",
+      "bytes": 30869908,
+      "sha256": "3796a10ef05b097f798ea22635cec7e917abefca6cf018c3770e303630978768"
+    }
+  ]
+}
